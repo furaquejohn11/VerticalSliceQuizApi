@@ -6,8 +6,6 @@ using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
 using SimpleQuiz.Api.Database;
 using SimpleQuiz.Api.Entities;
-using SimpleQuiz.Api.Features.Users.Infrastructure;
-using SimpleQuiz.Api.Services;
 using SimpleQuiz.Api.Shared;
 
 namespace SimpleQuiz.Api.Features.Users;

@@ -90,17 +90,18 @@ public class GetUserByLoginHandlerTests
     public async Task Handle_WhenPasswordIncorrect_ReturnsLoginError()
     {
         // Arrange
-        var query = new GetUserByLogin.Query(ValidUsername, "wrongpassword");
+        var query = new GetUserByLogin.Query(ValidUsername, ValidPassword);
 
         string hashedPassword = _passwordHasherMock.Object.HashPassword(ValidPassword);
-        var user = User.Create(ValidUsername, hashedPassword, "First", "Last");
+        var user = User.Create(ValidUsername, hashedPassword, "John", "Doe");
 
         _validatorMock
             .Setup(v => v.Validate(query))
             .Returns(new ValidationResult());
 
         _userRepositoryMock
-            .Setup(r => r.FindAsync(It.IsAny<Expression<Func<User, bool>>>()))
+            .Setup(r => r.FindAsync(It.Is<Expression<Func<User, bool>>>(expr =>
+                expr.Compile().Invoke(user))))
             .ReturnsAsync(user);
 
         // Act
