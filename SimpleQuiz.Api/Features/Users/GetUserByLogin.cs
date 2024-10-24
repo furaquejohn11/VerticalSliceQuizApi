@@ -2,8 +2,10 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
 using SimpleQuiz.Api.Database;
+using SimpleQuiz.Api.Entities;
 using SimpleQuiz.Api.Features.Users.Infrastructure;
 using SimpleQuiz.Api.Services;
 using SimpleQuiz.Api.Shared;
@@ -26,19 +28,21 @@ public static class GetUserByLogin
 
     }
     internal sealed class Handler : IQueryHandler<Query, string>
-    {
-        private readonly AppDbContext _appDbContext;
+    { 
+        private readonly IRepository<User> _userRepository;
         private readonly IValidator<Query> _validator;
-        private readonly PasswordHasher _passwordHasher;
-        private readonly TokenProvider _tokenProvider;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly ITokenProvider _tokenProvider;
 
         public Handler(
-            AppDbContext appDbContext,
+           
+            IRepository<User> userRepository,
             IValidator<Query> validator,
-            PasswordHasher passwordHasher,
-            TokenProvider tokenProvider)
+            IPasswordHasher passwordHasher,
+            ITokenProvider tokenProvider)
         {
-            _appDbContext = appDbContext;
+           
+            _userRepository = userRepository;
             _validator = validator;
             _passwordHasher = passwordHasher;
             _tokenProvider = tokenProvider;
@@ -53,7 +57,8 @@ public static class GetUserByLogin
                     "Login.Validation",
                     validationResult.ToString()));
             }
-            var user = await _appDbContext.Users.FirstOrDefaultAsync(u => u.Username == request.username);
+
+            var user = await _userRepository.FindAsync(u => u.Username == request.username);
 
             if (user is not null && _passwordHasher.VerifyPassword(request.password, user.Password))
             {

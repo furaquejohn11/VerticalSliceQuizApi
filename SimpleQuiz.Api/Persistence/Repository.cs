@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Database;
+using System.Linq.Expressions;
 
 namespace SimpleQuiz.Api.Persistence;
 
@@ -43,5 +44,10 @@ public class Repository<T> : IRepository<T> where T : class
     {
         _appDbContext.Set<T>().Remove(entity);
         await _appDbContext.SaveChangesAsync();
+    }
+
+    public async Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _appDbContext.Set<T>().FirstOrDefaultAsync(predicate);
     }
 }

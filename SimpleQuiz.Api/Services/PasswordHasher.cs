@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SimpleQuiz.Api.Abstractions;
 
 namespace SimpleQuiz.Api.Services;
 
-public class PasswordHasher
+public class PasswordHasher : IPasswordHasher
 {
     public string HashPassword(string password)
     {

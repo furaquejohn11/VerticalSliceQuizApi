@@ -38,8 +38,8 @@ builder.Services.AddCarter();
 builder.Services.AddValidatorsFromAssembly(assembly);
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<PasswordHasher>();
-builder.Services.AddSingleton<TokenProvider>();
+builder.Services.AddScoped<IPasswordHasher,PasswordHasher>();
+builder.Services.AddSingleton<ITokenProvider,TokenProvider>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

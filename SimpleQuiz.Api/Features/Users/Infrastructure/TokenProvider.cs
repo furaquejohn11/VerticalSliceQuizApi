@@ -3,10 +3,11 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SimpleQuiz.Api.Entities;
 using Microsoft.IdentityModel.JsonWebTokens;
+using SimpleQuiz.Api.Abstractions;
 
 namespace SimpleQuiz.Api.Features.Users.Infrastructure;
 
-internal sealed class TokenProvider(IConfiguration configuration)
+internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvider
 {
     public string Create(User user)
     {

@@ -34,12 +34,12 @@ public static class CreateUser
     {
         private readonly IRepository<User> _userRepository;
         private readonly IValidator<Command> _validator;
-        private readonly PasswordHasher _passwordHasher;
+        private readonly IPasswordHasher _passwordHasher;
 
         public Handler(
             IRepository<User> userRepository,
             IValidator<Command> validator,
-            PasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _validator = validator;

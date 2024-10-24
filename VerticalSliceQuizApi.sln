@@ -5,7 +5,11 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7475FF1B-3EA1-4526-B578-10E096FB783E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleQuiz.Api", "SimpleQuiz.Api\SimpleQuiz.Api.csproj", "{4B653EB7-35F3-403B-9183-5B0B7E424733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleQuiz.Api", "SimpleQuiz.Api\SimpleQuiz.Api.csproj", "{4B653EB7-35F3-403B-9183-5B0B7E424733}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{11ACC861-0EAA-40A2-8397-0672AF5A8B2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleQuiz.Api.Tests", "SimpleQuiz.Api.Tests\SimpleQuiz.Api.Tests.csproj", "{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,12 +21,17 @@ Global
 		{4B653EB7-35F3-403B-9183-5B0B7E424733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B653EB7-35F3-403B-9183-5B0B7E424733}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B653EB7-35F3-403B-9183-5B0B7E424733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4B653EB7-35F3-403B-9183-5B0B7E424733} = {7475FF1B-3EA1-4526-B578-10E096FB783E}
+		{C1C29109-8EE7-48D0-BBC9-C07AFCB2BAB5} = {11ACC861-0EAA-40A2-8397-0672AF5A8B2E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BAEB6CF0-514B-469A-93C0-4949D2EDF788}
