@@ -2,7 +2,7 @@
 
 public class Question
 {
-    public Question(
+    private Question(
         Guid quizId,
         string text,
         string type,

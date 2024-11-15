@@ -2,7 +2,7 @@
 
 public class Quiz
 {
-    public Quiz(
+    private Quiz(
         Guid quizId,
         Guid userId,
         string title,

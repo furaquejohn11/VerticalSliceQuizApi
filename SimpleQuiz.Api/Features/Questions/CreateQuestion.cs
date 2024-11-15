@@ -50,7 +50,7 @@ public static class CreateQuestion
                     validationResult.ToString()));
             }
 
-            var question = new Question(
+            var question = Question.Create(
                 request.QuizId,
                 request.Text,
                 request.Type,

@@ -62,7 +62,7 @@ public class GetAllQuizOfUserEndpoint : ICarterModule
                 c.Type == JwtRegisteredClaimNames.Sub ||
                 c.Type == ClaimTypes.NameIdentifier);  // Add this alternative
 
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
                 //Console.WriteLine("User ID claim not found or invalid.");
                 return Results.Unauthorized();

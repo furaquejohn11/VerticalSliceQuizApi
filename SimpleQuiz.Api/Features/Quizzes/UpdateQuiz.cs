@@ -1,9 +1,8 @@
 ﻿using Carter;
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
-using SimpleQuiz.Api.Database;
 using SimpleQuiz.Api.Entities;
 using SimpleQuiz.Api.Shared;
 
@@ -29,12 +28,12 @@ public static class UpdateQuiz
     }
     internal sealed class Handler : ICommandHandler<Command>
     {
-        private readonly AppDbContext _appDbContext;
+        private readonly IRepository<Quiz> _quizRepository;
         private readonly IValidator<Command> _validator;
 
-        public Handler(AppDbContext appDbContext, IValidator<Command> validator)
+        public Handler(IRepository<Quiz> quizRepository, IValidator<Command> validator)
         {
-            _appDbContext = appDbContext;
+            _quizRepository = quizRepository;
             _validator = validator;
         }
 
@@ -48,26 +47,22 @@ public static class UpdateQuiz
                     validationResult.ToString()));
             }
 
-            var quiz = await _appDbContext.Quizzes
-               .FirstOrDefaultAsync(q => q.QuizId == request.QuizId, cancellationToken);
+            var quiz = await _quizRepository.FindAsync(q => q.QuizId == request.QuizId);
 
-            if (quiz == null)
+            if (quiz is null)
             {
                 return Result.Failure(new Error(
                     "Quiz.NotFound",
                     $"Quiz with ID {request.QuizId} was not found."));
             }
 
-            var updatedQuiz = new Quiz(
-               quiz.QuizId,
-               quiz.UserId,
-               request.Title,
-               request.Description,
-               request.IsPublic);
+            quiz.Update(
+                request.Title,
+                request.Description,
+                request.IsPublic);
 
-            _appDbContext.Entry(quiz).CurrentValues.SetValues(updatedQuiz);
 
-            await _appDbContext.SaveChangesAsync(cancellationToken);
+            await _quizRepository.UpdateAsync(quiz);
             return Result.Success();
         }
     }
