@@ -1,18 +1,18 @@
 ﻿using Carter;
 using FluentValidation;
 using MediatR;
+using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
-using SimpleQuiz.Api.Database;
 using SimpleQuiz.Api.Entities;
-using SimpleQuiz.Api.Features.Users;
 using SimpleQuiz.Api.Shared;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace SimpleQuiz.Api.Features.Quizzes;
 
 public static class CreateQuiz
 {
     public record Command(
-        Guid UserId,
         string Title,
         string Description,
         bool IsPublic
@@ -22,9 +22,6 @@ public static class CreateQuiz
     {
         public Validator()
         {
-            RuleFor(c => c.UserId)
-            .NotEmpty().WithMessage("User ID is required.");
-
             RuleFor(c => c.Title)
                 .NotEmpty().WithMessage("Title is required.")
                 .MaximumLength(100).WithMessage("Title must not exceed 100 characters.");
@@ -40,13 +37,18 @@ public static class CreateQuiz
 
     internal sealed class Handler : ICommandHandler<Command>
     {
-        private readonly AppDbContext _appDbContext;
+        private readonly IRepository<Quiz> _quizRepository;
         private readonly IValidator<Command> _validator;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public Handler(AppDbContext appDbContext, IValidator<Command> validator)
+        public Handler(
+            IRepository<Quiz> quizRepository,
+            IValidator<Command> validator,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _appDbContext = appDbContext;
+            _quizRepository = quizRepository;
             _validator = validator;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
@@ -58,18 +60,42 @@ public static class CreateQuiz
                     "CreateUser.Validation",
                     validationResult.ToString()));
             }
+            try
+            {
+                var quiz = Quiz.Create(
+                   GetUserId(),
+                   request.Title,
+                   request.Description,
+                   request.IsPublic
+                   );
 
-            var quiz = Quiz.Create(
-                request.UserId,
-                request.Title,
-                request.Description,
-                request.IsPublic
-                );
+                await _quizRepository.AddAsync(quiz);
 
-            await _appDbContext.Quizzes.AddAsync(quiz);
-            await _appDbContext.SaveChangesAsync();
+                return Result.Success(quiz);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Result.Failure(new Error(
+                    "UserId.Validation",
+                    ex.Message));
+            }
+           
+        }
 
-            return Result.Success(quiz);
+        private Guid GetUserId()
+        {
+            var httpContext = _httpContextAccessor.HttpContext
+                ?? throw new InvalidOperationException("HttpContext is not available.");
+
+            var userIdClaim = httpContext.User.Claims.FirstOrDefault(c =>
+                c.Type == JwtRegisteredClaimNames.Sub ||
+                c.Type == ClaimTypes.NameIdentifier);
+
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                throw new InvalidOperationException("User ID claim not found or invalid.");
+            }
+            return userId;
         }
     }
 }

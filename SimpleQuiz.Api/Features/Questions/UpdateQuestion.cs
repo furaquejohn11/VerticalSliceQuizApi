@@ -3,9 +3,7 @@ using FluentValidation;
 using MediatR;
 using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
-using SimpleQuiz.Api.Database;
 using SimpleQuiz.Api.Entities;
-using SimpleQuiz.Api.Features.Quizzes;
 using SimpleQuiz.Api.Shared;
 using static SimpleQuiz.Api.Features.Questions.CreateQuestion;
 
@@ -32,20 +30,14 @@ public static class UpdateQuestion
     internal sealed class Handler : ICommandHandler<Command>
     {
         private readonly IRepository<Question> _questionRepository;
-        private readonly IRepository<AnswerOption> _answerOptionRepository;
         private readonly IValidator<Command> _validator;
-        private readonly AppDbContext _appDbContext;
 
         public Handler(
             IRepository<Question> questionRepository,
-            IRepository<AnswerOption> answerOptionRepository,
-            IValidator<Command> validator,
-            AppDbContext appDbContext)
+            IValidator<Command> validator)
         {
             _questionRepository = questionRepository;
-            _answerOptionRepository = answerOptionRepository;
             _validator = validator;
-            _appDbContext = appDbContext;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
