@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using SimpleQuiz.Api.Persistence;
 using SimpleQuiz.Api.Abstractions;
+using FluentAssertions.Common;
+using SimpleQuiz.Api.Abstractions.Authorizations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,17 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IPasswordHasher,PasswordHasher>();
 builder.Services.AddSingleton<ITokenProvider,TokenProvider>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+
+
+// TODO FIX THIS
+builder.Services.AddTransient(typeof(IAuthorizationService<>), typeof(AuthorizationService<>));
+// Registering all strategies for different types dynamically
+builder.Services.AddScoped<IAuthorizationStrategy<Guid>, QuizAuthorizationStrategy>();
+builder.Services.AddScoped<IAuthorizationStrategy<int>, QuestionAuthorizationStrategy>();
+builder.Services.AddScoped<IAuthorizationStrategy<int>, AnswerOptionAuthorizationStrategy>();
+
+
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

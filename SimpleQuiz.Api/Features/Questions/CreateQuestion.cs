@@ -1,9 +1,11 @@
 ﻿using Carter;
 using FluentValidation;
 using MediatR;
+using SimpleQuiz.Api.Abstractions.Authorizations;
 using SimpleQuiz.Api.Abstractions.Operations;
 using SimpleQuiz.Api.Database;
 using SimpleQuiz.Api.Entities;
+using SimpleQuiz.Api.Services;
 using SimpleQuiz.Api.Shared;
 
 namespace SimpleQuiz.Api.Features.Questions;
@@ -33,11 +35,16 @@ public static class CreateQuestion
     {
         private readonly AppDbContext _appDbContext;
         private readonly IValidator<Command> _validator;
+        private readonly IAuthorizationService<Guid> _authorizationService;
 
-        public Handler(AppDbContext appDbContext, IValidator<Command> validator)
+        public Handler(
+            AppDbContext appDbContext, 
+            IValidator<Command> validator,
+            IAuthorizationService<Guid> authorizationService)
         {
             _appDbContext = appDbContext;
             _validator = validator;
+            _authorizationService = authorizationService;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
@@ -48,6 +55,14 @@ public static class CreateQuestion
                 return Result.Failure<string>(new Error(
                     "Login.Validation",
                     validationResult.ToString()));
+            }
+
+            var isAuthorized = await _authorizationService
+                                  .IsUserAuthorizedToModifyAsync<QuizAuthorizationStrategy>(request.QuizId);
+            if (!isAuthorized)
+            {
+                return Result.Failure(new Error("Authorization.Failure", 
+                    "User is not authorized to create question on this quiz."));
             }
 
             var question = Question.Create(

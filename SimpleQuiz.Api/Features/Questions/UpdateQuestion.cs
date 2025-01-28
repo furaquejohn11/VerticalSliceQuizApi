@@ -2,8 +2,10 @@
 using FluentValidation;
 using MediatR;
 using SimpleQuiz.Api.Abstractions;
+using SimpleQuiz.Api.Abstractions.Authorizations;
 using SimpleQuiz.Api.Abstractions.Operations;
 using SimpleQuiz.Api.Entities;
+using SimpleQuiz.Api.Services;
 using SimpleQuiz.Api.Shared;
 using static SimpleQuiz.Api.Features.Questions.CreateQuestion;
 
@@ -31,13 +33,16 @@ public static class UpdateQuestion
     {
         private readonly IRepository<Question> _questionRepository;
         private readonly IValidator<Command> _validator;
+        private readonly IAuthorizationService<int> _authorizationService;
 
         public Handler(
             IRepository<Question> questionRepository,
-            IValidator<Command> validator)
+            IValidator<Command> validator,
+            IAuthorizationService<int> authorizationService)
         {
             _questionRepository = questionRepository;
             _validator = validator;
+            _authorizationService = authorizationService;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
@@ -48,6 +53,14 @@ public static class UpdateQuestion
                 return Result.Failure(new Error(
                     "Question.Validation",
                     validationResult.ToString()));
+            }
+
+            var isAuthorized = await _authorizationService
+                                    .IsUserAuthorizedToModifyAsync<QuestionAuthorizationStrategy>(request.Id);
+
+            if (!isAuthorized)
+            {
+                return Result.Failure(new Error("Authorization.Failure", "User is not authorized to update a question on this quiz."));
             }
 
             var question = await _questionRepository.GetByIdAsync(request.Id);

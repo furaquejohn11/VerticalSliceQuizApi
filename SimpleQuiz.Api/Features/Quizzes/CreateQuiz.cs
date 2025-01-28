@@ -5,8 +5,6 @@ using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
 using SimpleQuiz.Api.Entities;
 using SimpleQuiz.Api.Shared;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace SimpleQuiz.Api.Features.Quizzes;
 
@@ -40,15 +38,18 @@ public static class CreateQuiz
         private readonly IRepository<Quiz> _quizRepository;
         private readonly IValidator<Command> _validator;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserContextService _userContextService;
 
         public Handler(
             IRepository<Quiz> quizRepository,
             IValidator<Command> validator,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IUserContextService userContextService)
         {
             _quizRepository = quizRepository;
             _validator = validator;
             _httpContextAccessor = httpContextAccessor;
+            _userContextService = userContextService;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
@@ -63,7 +64,7 @@ public static class CreateQuiz
             try
             {
                 var quiz = Quiz.Create(
-                   GetUserId(),
+                   _userContextService.GetUserId(),
                    request.Title,
                    request.Description,
                    request.IsPublic
@@ -82,21 +83,6 @@ public static class CreateQuiz
            
         }
 
-        private Guid GetUserId()
-        {
-            var httpContext = _httpContextAccessor.HttpContext
-                ?? throw new InvalidOperationException("HttpContext is not available.");
-
-            var userIdClaim = httpContext.User.Claims.FirstOrDefault(c =>
-                c.Type == JwtRegisteredClaimNames.Sub ||
-                c.Type == ClaimTypes.NameIdentifier);
-
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            {
-                throw new InvalidOperationException("User ID claim not found or invalid.");
-            }
-            return userId;
-        }
     }
 }
 

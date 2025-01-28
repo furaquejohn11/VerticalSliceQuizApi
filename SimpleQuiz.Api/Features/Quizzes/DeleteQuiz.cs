@@ -1,19 +1,20 @@
 ﻿using Carter;
 using FluentValidation;
 using MediatR;
-using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Abstractions.Operations;
+using SimpleQuiz.Api.Abstractions;
 using SimpleQuiz.Api.Entities;
 using SimpleQuiz.Api.Shared;
-
-namespace SimpleQuiz.Api.Features.Quizzes;
+using SimpleQuiz.Api.Services;
+using SimpleQuiz.Api.Abstractions.Authorizations;
 
 public static class DeleteQuiz
 {
     public record Command(Guid id) : ICommand;
+
     public class Validator : AbstractValidator<Command>
     {
-        public Validator() 
+        public Validator()
         {
             RuleFor(c => c.id).NotEmpty();
         }
@@ -23,15 +24,21 @@ public static class DeleteQuiz
     {
         private readonly IRepository<Quiz> _quizRepository;
         private readonly IValidator<Command> _validator;
+        private readonly IAuthorizationService<Guid> _authorizationService;
 
-        public Handler(IRepository<Quiz> quizRepository, IValidator<Command> validator)
+        public Handler(
+            IRepository<Quiz> quizRepository,
+            IValidator<Command> validator,
+            IAuthorizationService<Guid> authorizationService)
         {
             _quizRepository = quizRepository;
             _validator = validator;
+            _authorizationService = authorizationService;
         }
 
         public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
         {
+            // Validate the command
             var validationResult = _validator.Validate(request);
             if (!validationResult.IsValid)
             {
@@ -40,13 +47,22 @@ public static class DeleteQuiz
                     validationResult.ToString()));
             }
 
-            var quiz = await _quizRepository.GetByIdAsync(request.id);
-
-            if (quiz is null)
+            // Check if the user is authorized to delete the quiz
+            var isAuthorized = await _authorizationService
+                                    .IsUserAuthorizedToModifyAsync<QuizAuthorizationStrategy>(request.id);
+            if (!isAuthorized)
             {
-                return Result.Failure(new Error("QUIZ NOT FOUND","QUIZ CANT BE FOUND"));
+                return Result.Failure(new Error("Authorization.Failure", "User is not authorized to delete this quiz."));
             }
 
+            // Check if the quiz exists
+            var quiz = await _quizRepository.GetByIdAsync(request.id);
+            if (quiz is null)
+            {
+                return Result.Failure(new Error("Quiz.NotFound", "Quiz cannot be found."));
+            }
+
+            // Delete the quiz
             await _quizRepository.DeleteAsync(quiz);
 
             return Result.Success();
@@ -58,13 +74,13 @@ public class DeleteQuizEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("api/quiz/delete", async(IMediator mediator, Guid id) =>
+        app.MapDelete("api/quiz/delete", async (IMediator mediator, Guid id) =>
         {
             var result = await mediator.Send(new DeleteQuiz.Command(id));
 
             return result.IsSuccess
-                   ? Result.Success()
-                   : Result.Failure(result.Error);
+                ? Results.Ok(result)
+                : Results.BadRequest(result.Error);
         })
         .WithTags("Quizzes");
     }
