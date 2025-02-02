@@ -99,8 +99,8 @@ public class CreateQuestionEndpoint : ICarterModule
             var results = await mediator.Send(command);
 
             return results.IsSuccess
-                   ? Result.Success()
-                   : Result.Failure(results.Error);
+                   ? Results.Ok()
+                   : Results.BadRequest(results.Error);
 
         })
         .WithTags("Questions");

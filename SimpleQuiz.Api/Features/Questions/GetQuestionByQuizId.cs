@@ -96,8 +96,8 @@ public class GetQuestionByQuizIdEndpoint : ICarterModule
             var results = await mediator.Send(new GetQuestionByQuizId.Query(id));
 
             return results.IsSuccess
-                  ? Result.Success(results.Value)
-                  : Result.Failure(results.Error);
+                  ? Results.Ok()
+                  : Results.BadRequest(results.Error);
         })
         .WithTags("Questions");
     }

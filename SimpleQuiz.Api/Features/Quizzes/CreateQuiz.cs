@@ -37,18 +37,15 @@ public static class CreateQuiz
     {
         private readonly IRepository<Quiz> _quizRepository;
         private readonly IValidator<Command> _validator;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserContextService _userContextService;
 
         public Handler(
             IRepository<Quiz> quizRepository,
             IValidator<Command> validator,
-            IHttpContextAccessor httpContextAccessor,
             IUserContextService userContextService)
         {
             _quizRepository = quizRepository;
             _validator = validator;
-            _httpContextAccessor = httpContextAccessor;
             _userContextService = userContextService;
         }
 

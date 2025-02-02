@@ -91,8 +91,8 @@ public class UpdateQuizEndpoint : ICarterModule
             var result = await mediator.Send(command);
 
             return result.IsSuccess
-                   ? Result.Success()
-                   : Result.Failure(result.Error);
+                   ? Results.Ok()
+                   : Results.BadRequest(result.Error);
 
         })
         .WithTags("Quizzes");

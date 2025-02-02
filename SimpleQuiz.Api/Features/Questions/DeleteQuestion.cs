@@ -59,8 +59,8 @@ public class DeleteAnswerOptionEndpoint : ICarterModule
             var result = await mediator.Send(new DeleteQuestion.Command(id));
 
             return result.IsSuccess
-                   ? Result.Success()
-                   : Result.Failure(result.Error);
+                   ? Results.Ok()
+                   : Results.BadRequest(result.Error);
         })
         .WithTags("Questions");
     }
